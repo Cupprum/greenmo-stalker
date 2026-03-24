@@ -4,16 +4,18 @@ jest.mock('axios');
 
 test('the location of chargable cars is fetched', async () => {
     const car1 = {
-        carId: 1,
-        lat: 1.123456,
-        lon: 2.123456,
-        fuelLevel: 30,
+        id: 1,
+        position: {
+            coordinates: [2.123456, 1.123456]
+        },
+        stateOfCharge: 30,
     };
     const car2 = {
-        carId: 2,
-        lat: 3.123456,
-        lon: 4.123456,
-        fuelLevel: 50,
+        id: 2,
+        position: {
+            coordinates: [4.123456, 3.123456]
+        },
+        stateOfCharge: 50,
     };
     const data = [car1, car2];
 
@@ -31,5 +33,5 @@ test('the location of chargable cars is fetched', async () => {
     };
     const greenMo = new GreenMo(40);
     const cars = await greenMo.query(params);
-    expect(cars).toEqual([car1]);
+    expect(cars).toEqual([{ lat: car1.position.coordinates[1], lon: car1.position.coordinates[0] }]);
 });

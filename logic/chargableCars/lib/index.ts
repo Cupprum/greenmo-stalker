@@ -173,15 +173,17 @@ export const handler = async (
     console.log(`params: ${params}`);
     console.log('Parameters parsed.');
 
+    const centerPos = calculateCenter(pos1, pos2);
+
     let carPositionsPromise: Promise<Position[]> | undefined;
     if (params.queryCars) {
         console.log('Fetch cars in desired location.');
         try {
             const greenMoParams = {
-                lon1: `${pos1.lon}`,
-                lat1: `${pos1.lat}`,
-                lon2: `${pos2.lon}`,
-                lat2: `${pos2.lat}`,
+                lat: centerPos.lat,
+                lng: centerPos.lon,
+                rad: 2, // Radius in kilometers.
+                excludeStationedVehicles: true
             };
             const greenMo = new GreenMo(params.desiredFuelLevel);
             carPositionsPromise = greenMo.query(greenMoParams);
@@ -262,7 +264,6 @@ export const handler = async (
         }
 
         console.log('Generate map.');
-        const centerPos = calculateCenter(pos1, pos2);
         let img: Uint8Array;
         try {
             img = await executeMapsRequest(centerPos, {
@@ -303,7 +304,10 @@ export const handler = async (
 //         lon1: "12.511368",
 //         lat1: "55.794430",
 //         lon2: "12.527933",
-//         lat2: "55.779566"
+//         lat2: "55.779566",
+//         chargers: "true",
+//         cars: "true",
+//         desiredFuelLevel: "90",
 //     }
 // }
 
