@@ -1,4 +1,7 @@
 .env
+.aws-sam
+
+TODO.md
 
 # macOS
 .DS_Store
