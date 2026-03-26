@@ -1,4 +1,4 @@
-name: GreenMo Stalker deployment
+name: GreenMo Stalker Deployment
 
 on:
   workflow_dispatch:
@@ -6,37 +6,40 @@ on:
     branches:
       - 'master'
     paths:
-      - 'cdk/**'
-      - 'logic/**'
+      - 'template.yaml'
+      - 'function/**'
       - '.github/workflows/**'
-      - 'ci/**'
-
-# TODO: is this even used anywhere?
-env:
-  GREENMO_AWS_REGION: ${{ vars.GREENMO_AWS_REGION }}
-  GREENMO_AWS_ACCOUNT: ${{ vars.GREENMO_AWS_ACCOUNT }}
 
 jobs:
-  dagger:
+  deploy:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
         with:
-          node-version: 24
-      - name: Install Dagger CLI
-        run: curl -L https://dl.dagger.io/dagger/install.sh | sh
-        working-directory: /usr/local
-      - name: Install CI dependencies
-        run: npm ci
-        working-directory: ci
-      - name: Run Dagger
-        run: npm run dagger
-        working-directory: ci
+          go-version: '1.25'
+
+      - name: Setup AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Build and deploy
+        run: sam build --use-container
+
+      - name: SAM Deploy
+        run: |
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset \
+            --stack-name greenmo-stalker-stack \
+            --region ${{ vars.GREENMO_AWS_REGION }} \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides \
+                MapsApiToken=${{ secrets.GREENMO_OPEN_MAPS_API_TOKEN }} \
+                ApiKey=${{ secrets.GREENMO_API_KEY }}
         env:
-          GREENMO_API_KEY: ${{ secrets.GREENMO_API_KEY }}
-          GREENMO_AWS_ACCESS_KEY_ID: ${{ secrets.GREENMO_AWS_ACCESS_KEY_ID }}
-          GREENMO_AWS_SECRET_ACCESS_KEY: ${{ secrets.GREENMO_AWS_SECRET_ACCESS_KEY }}
-          GREENMO_OPEN_MAPS_API_TOKEN: ${{ secrets.GREENMO_OPEN_MAPS_API_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.GREENMO_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.GREENMO_AWS_SECRET_ACCESS_KEY }}
