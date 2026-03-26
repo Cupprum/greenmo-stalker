@@ -16,7 +16,6 @@ Resources:
         - image~1png  # SAM uses ~1 for / in MIME types
       Cors:
         AllowMethods: "'GET,OPTIONS'" # TODO: do i still need OPTIONS?
-        AllowOrigins: "'https://editor.swagger.io'" # TODO: is this still required?
       Auth:
         ApiKeyRequired: true
         UsagePlan:
@@ -38,10 +37,9 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: function/
+      CodeUri: ./function/
       Handler: bootstrap
       Runtime: provided.al2023
-      Architectures: [arm64]
       Timeout: 15
       Environment:
         Variables:
