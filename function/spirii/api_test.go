@@ -11,11 +11,14 @@ import (
 
 func TestSpiriiParams(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("neCoordinates") != "55.794430, 12.527933" {
-			t.Errorf("neCoordinates wrong, got %s", r.URL.Query().Get("neCoordinates"))
+		gotNe := r.URL.Query().Get("neCoordinates")
+		wantNe := "55.794430, 12.527933"
+		if gotNe != wantNe {
+			t.Errorf("neCoordinates wrong, got %q, want %q", gotNe, wantNe)
 		}
+
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"features": []}`))
+		w.Write([]byte(`[]`))
 	}))
 	defer server.Close()
 
@@ -29,16 +32,14 @@ func TestSpiriiParams(t *testing.T) {
 
 func TestSpiriiFiltering(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		resp := map[string]interface{}{
-			"features": []map[string]interface{}{
-				{
-					"properties": map[string]interface{}{"availableConnectors": 2},
-					"geometry":   map[string]interface{}{"coordinates": [2]float64{12.520, 55.787}},
-				},
-				{
-					"properties": map[string]interface{}{"availableConnectors": 0},
-					"geometry":   map[string]interface{}{"coordinates": [2]float64{12.525, 55.785}},
-				},
+		resp := []map[string]interface{}{
+			{
+				"properties": map[string]interface{}{"availableConnectors": 2},
+				"geometry":   map[string]interface{}{"coordinates": [2]float64{12.520, 55.787}},
+			},
+			{
+				"properties": map[string]interface{}{"availableConnectors": 0},
+				"geometry":   map[string]interface{}{"coordinates": [2]float64{12.525, 55.785}},
 			},
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -51,12 +52,12 @@ func TestSpiriiFiltering(t *testing.T) {
 	chargers, err := spirii.Query(server.URL, ne, sw)
 
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Expected no error, got %v", err)
 	}
 	if len(chargers) != 1 {
-		t.Fatalf("Expected 1 charger, got %d", len(chargers))
+		t.Fatalf("Expected 1 charger after filtering, got %d", len(chargers))
 	}
 	if chargers[0].Lat != 55.787 || chargers[0].Lon != 12.520 {
-		t.Errorf("Coordinate mapping failed: %+v", chargers[0])
+		t.Errorf("Coordinate mapping failed: got Lat %f Lon %f", chargers[0].Lat, chargers[0].Lon)
 	}
 }
