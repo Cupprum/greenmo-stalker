@@ -19,6 +19,7 @@ import (
 )
 
 func coreLogic(params map[string]string) (int, string, []byte, error) {
+	log.Println("Parsing parameters...")
 	lat1, _ := strconv.ParseFloat(params["lat1"], 64)
 	lon1, _ := strconv.ParseFloat(params["lon1"], 64)
 	lat2, _ := strconv.ParseFloat(params["lat2"], 64)
@@ -27,33 +28,45 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	if fuel == 0 {
 		fuel = 40
 	}
+	qCars := params["cars"] == "true"
+	qChargers := params["chargers"] == "true"
+	log.Printf(
+		"Lat1: %v, Lon1: %v, Lat2: %v, Lon2: %v, DesiredFuel: %v, Query Cars: %v, Query Chargers: %v\n",
+		lat1, lon1, lat2, lon2, fuel, qCars, qChargers,
+	)
 
 	p1, p2 := geo.Position{Lat: lat1, Lon: lon1}, geo.Position{Lat: lat2, Lon: lon2}
 	center := geo.Position{Lat: (p1.Lat + p2.Lat) / 2, Lon: (p1.Lon + p2.Lon) / 2}
-
 	radius := geo.Distance(p1, p2) / 2
 
 	var cars, chargers []geo.Position
 	var err error
 
 	if params["cars"] == "true" {
-		if cars, err = greenmobility.Query("https://platform.api.gourban.services/v1/hb98ga69/front/vehicles", center, radius, fuel); err != nil {
+		log.Println("Querying cars...")
+		url := "https://platform.api.gourban.services/v1/hb98ga69/front/vehicles"
+		if cars, err = greenmobility.Query(url, center, radius, fuel); err != nil {
 			return 500, "", nil, fmt.Errorf("greenmo error: %w", err)
 		}
 	}
 	if params["chargers"] == "true" {
+		log.Println("Querying chargers...")
 		// Spirii uses NE/SW
-		if chargers, err = spirii.Query("https://app.spirii.dk/api/v2/clusters", geo.Position{Lat: lat1, Lon: lon2}, geo.Position{Lat: lat2, Lon: lon1}); err != nil {
+		url := "https://app.spirii.dk/api/v2/clusters"
+		if chargers, err = spirii.Query(url, geo.Position{Lat: lat1, Lon: lon2}, geo.Position{Lat: lat2, Lon: lon1}); err != nil {
 			return 500, "", nil, fmt.Errorf("spirii error: %w", err)
 		}
 	}
 
 	if len(cars) == 0 && len(chargers) == 0 {
+		log.Println("No cars or charges found...")
 		return 200, "application/json", []byte(`{"message":"No results found"}`), nil
 	}
 
-	key := os.Getenv("MAP_API_KEY")
-	img, err := openstreetmaps.GenerateMap("https://maps.geoapify.com/v1/staticmap", center, cars, chargers, key)
+	log.Println("Generating map...")
+	key := os.Getenv("GREENMO_OPEN_MAPS_API_TOKEN")
+	url := "https://maps.geoapify.com/v1/staticmap"
+	img, err := openstreetmaps.GenerateMap(url, center, cars, chargers, key)
 	if err != nil {
 		return 500, "", nil, fmt.Errorf("map error: %w", err)
 	}
@@ -84,10 +97,17 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 }
 
 func main() {
+	log.Println("Starting execution...")
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
+		log.Println("Executing in lambda...")
 		lambda.Start(handler)
 	} else {
-		res, _, body, err := coreLogic(map[string]string{"lat1": "55.79", "lon1": "12.51", "lat2": "55.77", "lon2": "12.52", "cars": "true"})
-		fmt.Printf("Status: %d, Error: %v, Body Len: %d\n", res, err, len(body))
+		log.Println("Executing locally...")
+		res, _, body, err := coreLogic(map[string]string{
+			"lat1": "55.79", "lon1": "12.51", "lat2": "55.77", "lon2": "12.52",
+			"cars": "true", "chargers": "true",
+		})
+		log.Printf("Status: %d, Error: %v, Body Len: %d\n", res, err, len(body))
 	}
+	log.Println("Execution finished")
 }
