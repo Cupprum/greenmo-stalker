@@ -1,15 +1,7 @@
-# Cdk
-*.js
-!jest.config.js
-*.d.ts
-node_modules
+.env
+.aws-sam
 
-# CDK asset staging directory
-.cdk.staging
-cdk.out
-
-# Logic
-dist
+TODO.md
 
 # macOS
 .DS_Store
