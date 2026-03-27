@@ -1,4 +1,4 @@
-name: GreenMo Stalker Deployment
+name: Deployment
 
 on:
   workflow_dispatch:
@@ -7,6 +7,8 @@ on:
       - 'master'
     paths:
       - 'template.yaml'
+      - 'run.sh'
+      - 'deploy.sh'
       - 'function/**'
       - '.github/workflows/**'
 
