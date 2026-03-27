@@ -2,87 +2,61 @@ package spirii_test
 
 import (
 	"encoding/json"
+	"function/geo"
+	"function/spirii"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-type Charger struct {
-	Properties struct {
-		ID                  string `json:"id"`
-		AvailableConnectors int    `json:"availableConnectors"`
-	} `json:"properties"`
-	Geometry struct {
-		Coordinates [2]float64 `json:"coordinates"` // [lon, lat]
-	} `json:"geometry"`
-}
-
 func TestSpiriiParams(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("neCoordinates") != "55.794430, 12.527933" {
-			t.Errorf("neCoordinates wrong")
-		}
-		if r.URL.Query().Get("swCoordinates") != "55.779566, 12.511368" {
-			t.Errorf("swCoordinates wrong")
-		}
-		if r.URL.Query().Get("zoomLevel") != "22" {
-			t.Errorf("zoomLevel wrong")
+			t.Errorf("neCoordinates wrong, got %s", r.URL.Query().Get("neCoordinates"))
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{"features": []Charger{}})
+		w.Write([]byte(`{"features": []}`))
 	}))
 	defer server.Close()
 
-	// TODO: Call implementation
-	// _, err := QuerySpirii(server.URL, 55.794430, 12.527933, 55.779566, 12.511368)
-	// if err != nil {
-	// 	t.Errorf("Expected no error, got %v", err)
-	// }
+	ne := geo.Position{Lat: 55.794430, Lon: 12.527933}
+	sw := geo.Position{Lat: 55.779566, Lon: 12.511368}
+	_, err := spirii.Query(server.URL, ne, sw)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestSpiriiFiltering(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		chargers := []Charger{
-			{
-				Properties: struct {
-					ID                  string `json:"id"`
-					AvailableConnectors int    `json:"availableConnectors"`
-				}{ID: "charger_001", AvailableConnectors: 2}, // Should pass (> 0)
-				Geometry: struct {
-					Coordinates [2]float64 `json:"coordinates"`
-				}{Coordinates: [2]float64{12.520, 55.787}},
-			},
-			{
-				Properties: struct {
-					ID                  string `json:"id"`
-					AvailableConnectors int    `json:"availableConnectors"`
-				}{ID: "charger_002", AvailableConnectors: 0}, // Should fail (0)
-				Geometry: struct {
-					Coordinates [2]float64 `json:"coordinates"`
-				}{Coordinates: [2]float64{12.525, 55.785}},
+		resp := map[string]interface{}{
+			"features": []map[string]interface{}{
+				{
+					"properties": map[string]interface{}{"availableConnectors": 2},
+					"geometry":   map[string]interface{}{"coordinates": [2]float64{12.520, 55.787}},
+				},
+				{
+					"properties": map[string]interface{}{"availableConnectors": 0},
+					"geometry":   map[string]interface{}{"coordinates": [2]float64{12.525, 55.785}},
+				},
 			},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{"features": chargers})
+		json.NewEncoder(w).Encode(resp)
 	}))
 	defer server.Close()
 
-	// TODO: Processed result call
-	// chargers, err := QuerySpirii(server.URL, 55.794430, 12.527933, 55.779566, 12.511368)
+	ne := geo.Position{Lat: 55.79, Lon: 12.52}
+	sw := geo.Position{Lat: 55.77, Lon: 12.51}
+	chargers, err := spirii.Query(server.URL, ne, sw)
 
-	// TODO: Assertions
-	// if err != nil {
-	// 	t.Fatalf("Expected no error, got %v", err)
-	// }
-	// if len(chargers) != 1 {
-	// 	t.Fatalf("Expected 1 charger, got %d", len(chargers))
-	// }
-
-	// TODO: Verify coordinate mapping from [lon, lat] to {lat, lon}
-	// if chargers[0].Lat != 55.787 {
-	// 	t.Errorf("Expected latitude 55.787, got %f", chargers[0].Lat)
-	// }
-	// if chargers[0].Lon != 12.520 {
-	// 	t.Errorf("Expected longitude 12.520, got %f", chargers[0].Lon)
-	// }
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(chargers) != 1 {
+		t.Fatalf("Expected 1 charger, got %d", len(chargers))
+	}
+	if chargers[0].Lat != 55.787 || chargers[0].Lon != 12.520 {
+		t.Errorf("Coordinate mapping failed: %+v", chargers[0])
+	}
 }

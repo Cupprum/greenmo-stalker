@@ -19,7 +19,6 @@ import (
 )
 
 func coreLogic(params map[string]string) (int, string, []byte, error) {
-	// 1. Parse Inputs
 	lat1, _ := strconv.ParseFloat(params["lat1"], 64)
 	lon1, _ := strconv.ParseFloat(params["lon1"], 64)
 	lat2, _ := strconv.ParseFloat(params["lat2"], 64)
@@ -32,10 +31,8 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	p1, p2 := geo.Position{Lat: lat1, Lon: lon1}, geo.Position{Lat: lat2, Lon: lon2}
 	center := geo.Position{Lat: (p1.Lat + p2.Lat) / 2, Lon: (p1.Lon + p2.Lon) / 2}
 
-	// Radius is half the distance between corners (in km)
 	radius := geo.Distance(p1, p2) / 2
 
-	// 2. Query External Services
 	var cars, chargers []geo.Position
 	var err error
 
@@ -45,7 +42,7 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 		}
 	}
 	if params["chargers"] == "true" {
-		// Spirii uses specific NE/SW logic from spec
+		// Spirii uses NE/SW
 		if chargers, err = spirii.Query("https://app.spirii.dk/api/v2/clusters", geo.Position{Lat: lat1, Lon: lon2}, geo.Position{Lat: lat2, Lon: lon1}); err != nil {
 			return 500, "", nil, fmt.Errorf("spirii error: %w", err)
 		}
@@ -55,7 +52,6 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 		return 200, "application/json", []byte(`{"message":"No results found"}`), nil
 	}
 
-	// 3. Generate Map
 	key := os.Getenv("MAP_API_KEY")
 	img, err := openstreetmaps.GenerateMap("https://maps.geoapify.com/v1/staticmap", center, cars, chargers, key)
 	if err != nil {
@@ -91,7 +87,6 @@ func main() {
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
 		lambda.Start(handler)
 	} else {
-		// Local debug mode
 		res, _, body, err := coreLogic(map[string]string{"lat1": "55.79", "lon1": "12.51", "lat2": "55.77", "lon2": "12.52", "cars": "true"})
 		fmt.Printf("Status: %d, Error: %v, Body Len: %d\n", res, err, len(body))
 	}
