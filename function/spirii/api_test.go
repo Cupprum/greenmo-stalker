@@ -16,6 +16,11 @@ func TestSpiriiParams(t *testing.T) {
 		if gotNe != wantNe {
 			t.Errorf("neCoordinates wrong, got %q, want %q", gotNe, wantNe)
 		}
+		gotSw := r.URL.Query().Get("swCoordinates")
+		wantSw := "55.779566, 12.511368"
+		if gotSw != wantSw {
+			t.Errorf("swCoordinates wrong, got %q, want %q", gotNe, wantNe)
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`[]`))
@@ -48,7 +53,7 @@ func TestSpiriiFiltering(t *testing.T) {
 	defer server.Close()
 
 	nw := geo.Position{Lat: 55.79, Lon: 12.51}
-	se := geo.Position{Lat: 55.77, Lon: 12.52}
+	se := geo.Position{Lat: 55.77, Lon: 12.53}
 	chargers, err := spirii.Query(server.URL, nw, se)
 
 	if err != nil {
