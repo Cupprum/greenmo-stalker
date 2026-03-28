@@ -19,6 +19,8 @@ Environment variables are managed via `.env`:
 
 - `GREENMO_AWS_REGION`: Target AWS region.
 - `GREENMO_OPEN_MAPS_API_TOKEN`: Geoapify API key.
+- `GREENMO_DOMAIN_NAME`: Publicly accessible domain name.
+- `GREENMO_CERTIFICATE_ARN`: ARN of the Certificate from ACM
 
 Optional Environment variables used for local testing:
 - `GREENMO_API_URL`: Deployed API Gateway endpoint.

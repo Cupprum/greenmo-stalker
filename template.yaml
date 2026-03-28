@@ -4,22 +4,31 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   GreenmoOpenMapsApiToken:
     Type: String
+  GreenmoDomainName:
+    Type: String
+  GreenmoCertificateArn:
+    Type: String
 
 Resources:
   GreenMoApi:
     Type: AWS::Serverless::Api
     Properties:
       StageName: prod
-      BinaryMediaTypes:
-        - image~1png
-      Cors:
-        AllowMethods: "'GET,OPTIONS'"
       Auth:
         ApiKeyRequired: true
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: GreenMoUsagePlan
           Description: "Usage plan for GreenMo API"
+      BinaryMediaTypes:
+        - image~1png
+      Cors:
+        AllowMethods: "'GET,OPTIONS'"
+      Domain:
+        DomainName: !Ref GreenmoDomainName
+        CertificateArn: !Ref GreenmoCertificateArn
+        EndpointConfiguration: REGIONAL
+        SecurityPolicy: TLS_1_2
 
   ChargableCarsFunction:
     Type: AWS::Serverless::Function
