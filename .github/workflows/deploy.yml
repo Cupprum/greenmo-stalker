@@ -12,6 +12,10 @@ on:
       - 'function/**'
       - '.github/workflows/**'
 
+permissions:
+  id-token: write   # Required for JWT
+  contents: read    # Required for actions/checkout
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
