@@ -34,13 +34,6 @@ jobs:
         run: |
           ./run.sh test
 
-      - name: Setup AWS SAM CLI
-        run: |
-          curl -LO "https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip"
-          unzip -q aws-sam-cli-linux-x86_64.zip -d sam-installation
-          sudo ./sam-installation/install
-          sam --version
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
