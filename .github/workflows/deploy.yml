@@ -34,11 +34,15 @@ jobs:
         with:
           use-installer: true
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.GREENMO_AWS_ACCOUNT }}:role/greenmo-stalker-oidc
+          aws-region: ${{ vars.GREENMO_AWS_REGION }}
+
       - name: Build and deploy
         run: |
           ./deploy.sh
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.GREENMO_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.GREENMO_AWS_SECRET_ACCESS_KEY }}
           GREENMO_OPEN_MAPS_API_TOKEN: ${{ secrets.GREENMO_OPEN_MAPS_API_TOKEN }}
           GREENMO_AWS_REGION: ${{ vars.GREENMO_AWS_REGION }}
