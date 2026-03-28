@@ -85,7 +85,7 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 	code, contentType, body, err := coreLogic(req.QueryStringParameters)
 	if err != nil {
 		log.Printf("Execution Error: %v", err)
-		b, _ := json.Marshal(map[string]string{"error": err.Error()})
+		b, _ := json.Marshal(map[string]string{"error": "Internal Error"})
 		return events.APIGatewayProxyResponse{StatusCode: code, Body: string(b)}, nil
 	}
 
