@@ -49,12 +49,6 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 		if err != nil {
 			return 500, "", nil, fmt.Errorf("greenmo error: %w", err)
 		}
-		// Greenmo thinks in circles, we think in squares
-		for _, c := range rCars {
-			if p1.Lon < c.Lon && c.Lon < p2.Lon && p2.Lat < c.Lat && c.Lat < p1.Lat {
-				cars = append(cars, c)
-			}
-		}
 	}
 	if params["chargers"] == "true" {
 		log.Println("Querying chargers...")
