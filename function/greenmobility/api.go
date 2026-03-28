@@ -36,10 +36,12 @@ func Query(endpoint string, center geo.Position, radius float64, fuel int) ([]ge
 	if err := json.NewDecoder(resp.Body).Decode(&cars); err != nil {
 		return nil, fmt.Errorf("decode: %w", err)
 	}
-
+	
 	var res []geo.Position
 	for _, c := range cars {
-		if c.SOC <= fuel {
+		// Greenmo thinks in circles, we think in squares
+		inBox := p1.Lon < c.Lon && c.Lon < p2.Lon && p2.Lat < c.Lat && c.Lat < p1.Lat
+		if c.SOC <= fuel && inBox {
 			res = append(res, geo.Position{Lat: c.Pos.Coords[1], Lon: c.Pos.Coords[0]})
 		}
 	}
