@@ -1,5 +1,7 @@
 # GreenMo Stalker
 
+[![Deployment](https://github.com/Cupprum/greenmo-stalker/actions/workflows/deploy.yml/badge.svg)](https://github.com/Cupprum/greenmo-stalker/actions/workflows/deploy.yml)
+
 API proxy for identifying Greenmobility vehicles requiring charging in proximity to available Spirii charging stations. Returns a static map image with vehicle and charger locations.
 
 ## Architecture
