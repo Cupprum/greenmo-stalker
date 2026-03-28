@@ -36,6 +36,7 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	)
 
 	p1, p2 := geo.Position{Lat: lat1, Lon: lon1}, geo.Position{Lat: lat2, Lon: lon2}
+	// TOOD: move this to APIs
 	center := geo.Position{Lat: (p1.Lat + p2.Lat) / 2, Lon: (p1.Lon + p2.Lon) / 2}
 	radius := geo.Distance(p1, p2) / 2
 
