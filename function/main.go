@@ -35,27 +35,21 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 		lat1, lon1, lat2, lon2, fuel, qCars, qChargers,
 	)
 
-	p1, p2 := geo.Position{Lat: lat1, Lon: lon1}, geo.Position{Lat: lat2, Lon: lon2}
-	// TOOD: move this to APIs
-	center := geo.Position{Lat: (p1.Lat + p2.Lat) / 2, Lon: (p1.Lon + p2.Lon) / 2}
-	radius := geo.Distance(p1, p2) / 2
-
+	nw, se := geo.Position{Lat: lat1, Lon: lon1}, geo.Position{Lat: lat2, Lon: lon2}
 	var cars, chargers []geo.Position
 	var err error
 
 	if params["cars"] == "true" {
 		log.Println("Querying cars...")
 		url := "https://platform.api.gourban.services/v1/hb98ga69/front/vehicles"
-		rCars, err := greenmobility.Query(url, center, radius, fuel)
-		if err != nil {
+		if cars, err = greenmobility.Query(url, nw, se, fuel); err != nil {
 			return 500, "", nil, fmt.Errorf("greenmo error: %w", err)
 		}
 	}
 	if params["chargers"] == "true" {
 		log.Println("Querying chargers...")
-		// Spirii uses NE/SW
 		url := "https://app.spirii.dk/api/v2/clusters"
-		if chargers, err = spirii.Query(url, geo.Position{Lat: lat1, Lon: lon2}, geo.Position{Lat: lat2, Lon: lon1}); err != nil {
+		if chargers, err = spirii.Query(url, nw, se); err != nil {
 			return 500, "", nil, fmt.Errorf("spirii error: %w", err)
 		}
 	}
@@ -68,6 +62,7 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	log.Println("Generating map...")
 	key := os.Getenv("GREENMO_OPEN_MAPS_API_TOKEN")
 	url := "https://maps.geoapify.com/v1/staticmap"
+	center := geo.Position{Lat: (nw.Lat + se.Lat) / 2, Lon: (nw.Lon + se.Lon) / 2}
 	img, err := openstreetmaps.GenerateMap(url, center, cars, chargers, key)
 	if err != nil {
 		return 500, "", nil, fmt.Errorf("map error: %w", err)

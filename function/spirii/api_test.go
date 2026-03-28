@@ -22,9 +22,9 @@ func TestSpiriiParams(t *testing.T) {
 	}))
 	defer server.Close()
 
-	ne := geo.Position{Lat: 55.794430, Lon: 12.527933}
-	sw := geo.Position{Lat: 55.779566, Lon: 12.511368}
-	_, err := spirii.Query(server.URL, ne, sw)
+	nw := geo.Position{Lat: 55.794430, Lon: 12.511368}
+	se := geo.Position{Lat: 55.779566, Lon: 12.527933}
+	_, err := spirii.Query(server.URL, nw, se)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,9 +47,9 @@ func TestSpiriiFiltering(t *testing.T) {
 	}))
 	defer server.Close()
 
-	ne := geo.Position{Lat: 55.79, Lon: 12.52}
-	sw := geo.Position{Lat: 55.77, Lon: 12.51}
-	chargers, err := spirii.Query(server.URL, ne, sw)
+	nw := geo.Position{Lat: 55.79, Lon: 12.51}
+	se := geo.Position{Lat: 55.77, Lon: 12.52}
+	chargers, err := spirii.Query(server.URL, nw, se)
 
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)

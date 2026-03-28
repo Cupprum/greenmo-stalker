@@ -17,7 +17,7 @@ func TestGreenMobilityParams(t *testing.T) {
 		if r.URL.Query().Get("lng") != "12.519000" {
 			t.Errorf("lng param wrong")
 		}
-		if r.URL.Query().Get("rad") != "2.0" {
+		if r.URL.Query().Get("rad") != "1.3" {
 			t.Errorf("rad param wrong, got %s", r.URL.Query().Get("rad"))
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -25,7 +25,8 @@ func TestGreenMobilityParams(t *testing.T) {
 	}))
 	defer server.Close()
 
-	_, err := greenmobility.Query(server.URL, geo.Position{Lat: 55.787, Lon: 12.519}, 2.0, 40)
+	nw, se := geo.Position{Lat: 55.777000, Lon: 12.509000}, geo.Position{Lat: 55.797000, Lon: 12.529000}
+	_, err := greenmobility.Query(server.URL, nw, se, 40)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -48,7 +49,8 @@ func TestGreenMobilityFiltering(t *testing.T) {
 	}))
 	defer server.Close()
 
-	cars, err := greenmobility.Query(server.URL, geo.Position{Lat: 55.787, Lon: 12.519}, 2.0, 40)
+	nw, se := geo.Position{Lat: 55.800000, Lon: 12.500000}, geo.Position{Lat: 55.700000, Lon: 12.600000}
+	cars, err := greenmobility.Query(server.URL, nw, se, 40)
 
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)

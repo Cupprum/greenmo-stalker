@@ -8,7 +8,10 @@ import (
 	"net/url"
 )
 
-func Query(endpoint string, ne, sw geo.Position) ([]geo.Position, error) {
+func Query(endpoint string, nw, se geo.Position) ([]geo.Position, error) {
+	// Spirii uses NE/SW
+	ne, sw := geo.Position{Lat: nw.Lat, Lon: se.Lon}, geo.Position{Lat: se.Lat, Lon: nw.Lon}
+
 	u, _ := url.Parse(endpoint)
 	q := u.Query()
 	q.Set("neCoordinates", fmt.Sprintf("%f, %f", ne.Lat, ne.Lon))

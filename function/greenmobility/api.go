@@ -8,7 +8,10 @@ import (
 	"net/url"
 )
 
-func Query(endpoint string, center geo.Position, radius float64, fuel int) ([]geo.Position, error) {
+func Query(endpoint string, nw, se geo.Position, fuel int) ([]geo.Position, error) {
+	center := geo.Position{Lat: (nw.Lat + se.Lat) / 2, Lon: (nw.Lon + se.Lon) / 2}
+	radius := geo.Distance(nw, se) / 2
+
 	u, _ := url.Parse(endpoint)
 	q := u.Query()
 	q.Set("lat", fmt.Sprintf("%f", center.Lat))
@@ -36,13 +39,14 @@ func Query(endpoint string, center geo.Position, radius float64, fuel int) ([]ge
 	if err := json.NewDecoder(resp.Body).Decode(&cars); err != nil {
 		return nil, fmt.Errorf("decode: %w", err)
 	}
-	
+
 	var res []geo.Position
 	for _, c := range cars {
+		pos := geo.Position{Lat: c.Pos.Coords[1], Lon: c.Pos.Coords[0]}
 		// Greenmo thinks in circles, we think in squares
-		inBox := p1.Lon < c.Lon && c.Lon < p2.Lon && p2.Lat < c.Lat && c.Lat < p1.Lat
+		inBox := nw.Lon < pos.Lon && pos.Lon < se.Lon && se.Lat < pos.Lat && pos.Lat < nw.Lat
 		if c.SOC <= fuel && inBox {
-			res = append(res, geo.Position{Lat: c.Pos.Coords[1], Lon: c.Pos.Coords[0]})
+			res = append(res, pos)
 		}
 	}
 	return res, nil
