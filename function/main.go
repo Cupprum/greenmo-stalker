@@ -111,7 +111,7 @@ func main() {
 	} else {
 		log.Println("Executing locally...")
 		res, _, body, err := coreLogic(map[string]string{
-			"lat1": "55.79", "lon1": "12.51", "lat2": "55.77", "lon2": "12.52",
+			"lat1": "55.739892", "lon1": "12.517685", "lat2": "55.734577", "lon2": "12.526059",
 			"cars": "true", "chargers": "true",
 		})
 		log.Printf("Status: %d, Error: %v, Body Len: %d\n", res, err, len(body))
