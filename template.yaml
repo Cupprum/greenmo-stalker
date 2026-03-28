@@ -24,11 +24,11 @@ Resources:
         - image~1png
       Cors:
         AllowMethods: "'GET,OPTIONS'"
-      # Domain:
-      #   DomainName: !Ref GreenmoDomainName
-      #   CertificateArn: !Ref GreenmoCertificateArn
-      #   EndpointConfiguration: REGIONAL
-      #   SecurityPolicy: TLS_1_2
+      Domain:
+        DomainName: !Ref GreenmoDomainName
+        CertificateArn: !Ref GreenmoCertificateArn
+        EndpointConfiguration: REGIONAL
+        SecurityPolicy: TLS_1_2
 
   ChargableCarsFunction:
     Type: AWS::Serverless::Function
