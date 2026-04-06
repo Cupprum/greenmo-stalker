@@ -24,7 +24,8 @@ func GenerateMap(endpoint string, center geo.Position, cars, chargers []geo.Posi
 		m = append(m, fmt.Sprintf("lonlat:%f,%f;color:#3ea635;size:medium", p.Lon, p.Lat))
 	}
 	for _, p := range chargers {
-		m = append(m, fmt.Sprintf("lonlat:%f,%f;color:#f30e0e;size:medium", p.Lon, p.Lat))
+		style := "type:material;color:#5588d0;icon:ev_station;size:medium"
+		m = append(m, fmt.Sprintf("lonlat:%f,%f;%v", p.Lon, p.Lat, style))
 	}
 
 	if len(m) > 0 {
