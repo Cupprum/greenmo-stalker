@@ -43,6 +43,10 @@ func TestSpiriiFiltering(t *testing.T) {
 				"geometry":   map[string]interface{}{"coordinates": [2]float64{12.520, 55.787}},
 			},
 			{
+				"properties": map[string]interface{}{"availableConnectors": 2, "id": "CLE123"},
+				"geometry":   map[string]interface{}{"coordinates": [2]float64{12.525, 55.785}},
+			},
+			{
 				"properties": map[string]interface{}{"availableConnectors": 0},
 				"geometry":   map[string]interface{}{"coordinates": [2]float64{12.525, 55.785}},
 			},
@@ -59,6 +63,8 @@ func TestSpiriiFiltering(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
+	// Only the first charger should be included after filtering
+	// The second belongs to Clever, and the third has no available connectors
 	if len(chargers) != 1 {
 		t.Fatalf("Expected 1 charger after filtering, got %d", len(chargers))
 	}
