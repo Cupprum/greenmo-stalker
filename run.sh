@@ -16,6 +16,15 @@ load_env_file() {
     fi
 }
 
+handle_response() {
+    local response="$1"
+    if [ ${#response} -gt 50 ]; then
+        echo "Image received; its stored in the clipboard, paste it to browser url."
+        echo "data:image/jpeg;base64,$response" | xclip -selection clipboard
+    else
+        echo "$response"
+    fi
+}
 
 case "${1:-}" in
     "test")
@@ -26,20 +35,14 @@ case "${1:-}" in
     "run")
         load_env_file ".env"
         cd function
-        go run .
+        RESPONSE=$(go run .)
+        handle_response "$RESPONSE"
         ;;
     "trigger")
         load_env_file ".env"
-
         RESPONSE=$(curl -s -H "X-API-KEY: $GREENMO_API_KEY" \
             "$GREENMO_API_URL?lon1=12.517685&lat1=55.739892&lon2=12.526059&lat2=55.734577&chargers=true&cars=true&desiredFuelLevel=60")
-
-        if [ ${#RESPONSE} -gt 50 ]; then
-            echo "Image received; its stored in the clipboard, paste it to browser url."
-            echo "data:image/jpeg;base64,$RESPONSE" | xclip -selection clipboard
-        else
-            echo "$RESPONSE"
-        fi
+        handle_response "$RESPONSE"
         ;;
     *) 
         echo "Usage: $0 {test|run|trigger}"
