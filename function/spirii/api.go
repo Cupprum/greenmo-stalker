@@ -6,6 +6,7 @@ import (
 	"function/geo"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func Query(endpoint string, nw, se geo.Position) ([]geo.Position, error) {
@@ -31,7 +32,8 @@ func Query(endpoint string, nw, se geo.Position) ([]geo.Position, error) {
 
 	type Charger struct {
 		Props struct {
-			Avail int `json:"availableConnectors"`
+			Id    string `json:"id"`
+			Avail int    `json:"availableConnectors"`
 		} `json:"properties"`
 		Geom struct {
 			Coords [2]float64 `json:"coordinates"`
@@ -44,7 +46,8 @@ func Query(endpoint string, nw, se geo.Position) ([]geo.Position, error) {
 
 	var res []geo.Position
 	for _, c := range data {
-		if c.Props.Avail > 0 {
+		// Only include chargers which are available and do not belong to Clever
+		if c.Props.Avail > 0 && !strings.Contains(c.Props.Id, "CLE") {
 			res = append(res, geo.Position{Lat: c.Geom.Coords[1], Lon: c.Geom.Coords[0]})
 		}
 	}
