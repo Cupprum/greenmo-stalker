@@ -32,11 +32,11 @@ func TestGeoapifyMarkers(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		marker := r.URL.Query().Get("marker")
 
-		if !strings.Contains(marker, "color:#3ea635") || !strings.Contains(marker, "lonlat:12.515000,55.790000") {
+		if !strings.Contains(marker, "color:#3ea635;size:medium") || !strings.Contains(marker, "lonlat:12.515000,55.790000") {
 			t.Errorf("green marker missing or wrong: %s", marker)
 		}
-		if !strings.Contains(marker, "color:#f30e0e") || !strings.Contains(marker, "lonlat:12.520000,55.787000") {
-			t.Errorf("red marker missing or wrong: %s", marker)
+		if !strings.Contains(marker, "type:material;color:#5588d0;icon:ev_station;size:medium") || !strings.Contains(marker, "lonlat:12.520000,55.787000") {
+			t.Errorf("blue marker missing or wrong: %s", marker)
 		}
 
 		w.Header().Set("Content-Type", "image/png")
