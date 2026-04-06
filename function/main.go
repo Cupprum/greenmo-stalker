@@ -105,6 +105,7 @@ func main() {
 			"cars": "true", "chargers": "true",
 		})
 		log.Printf("Status: %d, Error: %v, Body Len: %d\n", res, err, len(body))
+		fmt.Println(string(base64.StdEncoding.EncodeToString(body)))
 	}
 	log.Println("Execution finished")
 }
