@@ -59,7 +59,7 @@ func TestGreenMobilityFiltering(t *testing.T) {
 		t.Fatalf("Expected 1 car after filtering, got %d", len(cars))
 	}
 
-	if cars[0].Lat != 55.790 || cars[0].Lon != 12.515 {
+	if cars[0].Pos.Lat != 55.790 || cars[0].Pos.Lon != 12.515 {
 		t.Errorf("Coordinate mapping failed, got %+v", cars[0])
 	}
 }

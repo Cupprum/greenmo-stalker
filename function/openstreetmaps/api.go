@@ -1,4 +1,4 @@
-package openstreetmaps
+package osm
 
 import (
 	"fmt"
@@ -9,7 +9,14 @@ import (
 	"strings"
 )
 
-func GenerateMap(endpoint string, center geo.Position, cars, chargers []geo.Position, key string) ([]byte, error) {
+type Marker struct {
+	Pos   geo.Position
+	Color string
+	Text  string
+	Icon  string
+}
+
+func GenerateMap(endpoint string, center geo.Position, markers []Marker, key string) ([]byte, error) {
 	u, _ := url.Parse(endpoint)
 	q := u.Query()
 	q.Set("style", "maptiler-3d")
@@ -19,17 +26,20 @@ func GenerateMap(endpoint string, center geo.Position, cars, chargers []geo.Posi
 	q.Set("zoom", "14")
 	q.Set("apiKey", key)
 
-	var m []string
-	for _, p := range cars {
-		m = append(m, fmt.Sprintf("lonlat:%f,%f;color:#3ea635;size:medium", p.Lon, p.Lat))
-	}
-	for _, p := range chargers {
-		style := "type:material;color:#5588d0;icon:ev_station;size:medium"
-		m = append(m, fmt.Sprintf("lonlat:%f,%f;%v", p.Lon, p.Lat, style))
+	var ms []string
+	for _, m := range markers {
+		ll := fmt.Sprintf("lonlat:%f,%f", m.Pos.Lon, m.Pos.Lat)
+		c := fmt.Sprintf("color:%v", m.Color)
+		s := fmt.Sprintf("size:%v", "medium")
+		add := fmt.Sprintf("text:%v", m.Text)
+		if m.Icon != "" {
+			add = fmt.Sprintf("icon:%v", m.Icon)
+		}
+		ms = append(ms, strings.Join([]string{ll, c, s, add}, ";"))
 	}
 
-	if len(m) > 0 {
-		q.Set("marker", strings.Join(m, "|"))
+	if len(ms) > 0 {
+		q.Set("marker", strings.Join(ms, "|"))
 	}
 	u.RawQuery = q.Encode()
 

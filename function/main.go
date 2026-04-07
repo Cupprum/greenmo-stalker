@@ -14,7 +14,7 @@ import (
 
 	"function/geo"
 	"function/greenmobility"
-	"function/openstreetmaps"
+	osm "function/openstreetmaps"
 	"function/spirii"
 )
 
@@ -36,7 +36,8 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	)
 
 	nw, se := geo.Position{Lat: lat1, Lon: lon1}, geo.Position{Lat: lat2, Lon: lon2}
-	var cars, chargers []geo.Position
+	var cars []greenmobility.Car
+	var chargers []geo.Position
 	var err error
 
 	if params["cars"] == "true" {
@@ -63,7 +64,15 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	key := os.Getenv("GREENMO_OPEN_MAPS_API_TOKEN")
 	url := "https://maps.geoapify.com/v1/staticmap"
 	center := geo.Position{Lat: (nw.Lat + se.Lat) / 2, Lon: (nw.Lon + se.Lon) / 2}
-	img, err := openstreetmaps.GenerateMap(url, center, cars, chargers, key)
+	markers := []osm.Marker{}
+	for _, c := range cars {
+		m := osm.Marker{Pos: c.Pos, Color: "#3ea635", Text: strconv.Itoa(c.Charge)}
+		markers = append(markers, m)
+	}
+	for _, c := range chargers {
+		markers = append(markers, osm.Marker{Pos: c, Color: "#5588d0", Icon: "ev_station"})
+	}
+	img, err := osm.GenerateMap(url, center, markers, key)
 	if err != nil {
 		return 500, "", nil, fmt.Errorf("map error: %w", err)
 	}

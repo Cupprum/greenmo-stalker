@@ -1,8 +1,8 @@
-package openstreetmaps_test
+package osm_test
 
 import (
 	"function/geo"
-	"function/openstreetmaps"
+	osm "function/openstreetmaps"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -22,7 +22,7 @@ func TestGeoapifyParams(t *testing.T) {
 	}))
 	defer server.Close()
 
-	_, err := openstreetmaps.GenerateMap(server.URL, geo.Position{Lat: 55.787, Lon: 12.519}, nil, nil, "test-key")
+	_, err := osm.GenerateMap(server.URL, geo.Position{Lat: 55.787, Lon: 12.519}, nil, "test-key")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,11 +32,28 @@ func TestGeoapifyMarkers(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		marker := r.URL.Query().Get("marker")
 
-		if !strings.Contains(marker, "color:#3ea635;size:medium") || !strings.Contains(marker, "lonlat:12.515000,55.790000") {
-			t.Errorf("green marker missing or wrong: %s", marker)
+		for _, v := range []string{
+			"color:#3ea635",
+			"size:medium",
+			"lonlat:12.515000,55.790000",
+			"text:22",
+		} {
+			if !strings.Contains(marker, v) {
+				t.Errorf("green marker missing or wrong: %s, value: %s", marker, v)
+				break
+			}
 		}
-		if !strings.Contains(marker, "type:material;color:#5588d0;icon:ev_station;size:medium") || !strings.Contains(marker, "lonlat:12.520000,55.787000") {
-			t.Errorf("blue marker missing or wrong: %s", marker)
+
+		for _, v := range []string{
+			"color:#5588d0",
+			"size:medium",
+			"lonlat:12.520000,55.787000",
+			"icon:ev_station",
+		} {
+			if !strings.Contains(marker, v) {
+				t.Errorf("blue marker missing or wrong: %s, value: %s", marker, v)
+				break
+			}
 		}
 
 		w.Header().Set("Content-Type", "image/png")
@@ -44,10 +61,12 @@ func TestGeoapifyMarkers(t *testing.T) {
 	}))
 	defer server.Close()
 
-	cars := []geo.Position{{Lat: 55.790, Lon: 12.515}}
-	chargers := []geo.Position{{Lat: 55.787, Lon: 12.520}}
+	ms := []osm.Marker{
+		{Pos: geo.Position{Lat: 55.790, Lon: 12.515}, Color: "#3ea635", Text: "22"},
+		{Pos: geo.Position{Lat: 55.787, Lon: 12.520}, Color: "#5588d0", Icon: "ev_station"},
+	}
 
-	_, err := openstreetmaps.GenerateMap(server.URL, geo.Position{Lat: 55.0, Lon: 12.0}, cars, chargers, "test-key")
+	_, err := osm.GenerateMap(server.URL, geo.Position{Lat: 55.0, Lon: 12.0}, ms, "test-key")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,7 +8,12 @@ import (
 	"net/url"
 )
 
-func Query(endpoint string, nw, se geo.Position, fuel int) ([]geo.Position, error) {
+type Car struct {
+	Pos    geo.Position
+	Charge int
+}
+
+func Query(endpoint string, nw, se geo.Position, fuel int) ([]Car, error) {
 	center := geo.Position{Lat: (nw.Lat + se.Lat) / 2, Lon: (nw.Lon + se.Lon) / 2}
 	radius := geo.Distance(nw, se) / 2
 
@@ -40,13 +45,13 @@ func Query(endpoint string, nw, se geo.Position, fuel int) ([]geo.Position, erro
 		return nil, fmt.Errorf("decode: %w", err)
 	}
 
-	var res []geo.Position
+	var res []Car
 	for _, c := range cars {
 		pos := geo.Position{Lat: c.Pos.Coords[1], Lon: c.Pos.Coords[0]}
 		// Greenmo thinks in circles, we think in squares
 		inBox := nw.Lon < pos.Lon && pos.Lon < se.Lon && se.Lat < pos.Lat && pos.Lat < nw.Lat
 		if c.SOC <= fuel && inBox {
-			res = append(res, pos)
+			res = append(res, Car{Pos: pos, Charge: c.SOC})
 		}
 	}
 	return res, nil
