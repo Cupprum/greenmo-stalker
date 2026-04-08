@@ -65,20 +65,12 @@ func TestGreenMobilityFiltering(t *testing.T) {
 }
 
 func TestGreenMobilityDiscounts(t *testing.T) {
-	mux := http.NewServeMux()
-
-	// Mock the main endpoint
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			http.NotFound(w, r)
-			return
-		}
-
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		resp := []map[string]interface{}{
 			{
 				"id":            101,
 				"stateOfCharge": 30,
-				"benefit":       "DISCOUNTED", // Should trigger discount fetch
+				"benefit":       "DISCOUNTED",
 				"position":      map[string]interface{}{"coordinates": [2]float64{12.515, 55.790}},
 			},
 			{
@@ -89,15 +81,7 @@ func TestGreenMobilityDiscounts(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(resp)
-	})
-
-	// Mock the specific car endpoint
-	mux.HandleFunc("/101", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"discount": {"discountPercentage": 0.15}}`))
-	})
-
-	server := httptest.NewServer(mux)
+	}))
 	defer server.Close()
 
 	nw, se := geo.Position{Lat: 55.800000, Lon: 12.500000}, geo.Position{Lat: 55.700000, Lon: 12.600000}
@@ -111,11 +95,11 @@ func TestGreenMobilityDiscounts(t *testing.T) {
 		t.Fatalf("Expected 2 cars, got %d", len(cars))
 	}
 
-	if cars[0].Discount != 15 {
-		t.Errorf("Expected Car 101 to have 15%% discount, got %d", cars[0].Discount)
+	if !cars[0].Discounted {
+		t.Errorf("Expected Car 101 to be Discounted")
 	}
 
-	if cars[1].Discount != 0 {
-		t.Errorf("Expected Car 102 to have 0%% discount, got %d", cars[1].Discount)
+	if cars[1].Discounted {
+		t.Errorf("Expected Car 102 to NOT be Discounted")
 	}
 }
