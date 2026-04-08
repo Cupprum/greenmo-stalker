@@ -66,7 +66,20 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	center := geo.Position{Lat: (nw.Lat + se.Lat) / 2, Lon: (nw.Lon + se.Lon) / 2}
 	markers := []osm.Marker{}
 	for _, c := range cars {
-		m := osm.Marker{Pos: c.Pos, Color: "#3ea635", Text: strconv.Itoa(c.Charge)}
+		color := "#3ea635"
+		switch {
+		case c.Discount >= 55:
+			color = "#d32f2f"
+		case c.Discount >= 45:
+			color = "#f44336"
+		case c.Discount >= 35:
+			color = "#ff9800"
+		case c.Discount >= 25:
+			color = "#ffc107"
+		case c.Discount >= 15:
+			color = "#e3e31f"
+		}
+		m := osm.Marker{Pos: c.Pos, Color: color, Text: strconv.Itoa(c.Charge)}
 		markers = append(markers, m)
 	}
 	for _, c := range chargers {
