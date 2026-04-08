@@ -9,9 +9,9 @@ import (
 )
 
 type Car struct {
-	Pos      geo.Position
-	Charge   int
-	Discount int
+	Pos        geo.Position
+	Charge     int
+	Discounted bool
 }
 
 func Query(endpoint string, nw, se geo.Position, fuel int) ([]Car, error) {
@@ -55,33 +55,8 @@ func Query(endpoint string, nw, se geo.Position, fuel int) ([]Car, error) {
 		// Greenmo thinks in circles, we think in squares
 		inBox := nw.Lon < pos.Lon && pos.Lon < se.Lon && se.Lat < pos.Lat && pos.Lat < nw.Lat
 		if c.SOC <= fuel && inBox {
-			discount := 0
-			if c.Benefit == "DISCOUNTED" {
-				// NOTE: on failure we ignore discount
-				discount, _ = fetchDiscount(endpoint, c.ID)
-			}
-			res = append(res, Car{Pos: pos, Charge: c.SOC, Discount: discount})
+			res = append(res, Car{Pos: pos, Charge: c.SOC, Discounted: c.Benefit == "DISCOUNTED"})
 		}
 	}
 	return res, nil
-}
-
-func fetchDiscount(endpoint string, id int) (int, error) {
-	u := fmt.Sprintf("%s/%d", endpoint, id)
-	resp, err := http.Get(u)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-
-	var data struct {
-		Discount struct {
-			Percentage float64 `json:"discountPercentage"`
-		} `json:"discount"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return 0, err
-	}
-	// Percentage as int instead of float
-	return int(data.Discount.Percentage * 100), nil
 }

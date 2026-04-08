@@ -26,7 +26,7 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	lon2, _ := strconv.ParseFloat(params["lon2"], 64)
 	fuel, _ := strconv.Atoi(params["desiredFuelLevel"])
 	if fuel == 0 {
-		fuel = 40
+		fuel = 100
 	}
 	qCars := params["cars"] == "true"
 	qChargers := params["chargers"] == "true"
@@ -67,16 +67,7 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	markers := []osm.Marker{}
 	for _, c := range cars {
 		color := "#3ea635"
-		switch {
-		case c.Discount >= 55:
-			color = "#d32f2f"
-		case c.Discount >= 45:
-			color = "#f44336"
-		case c.Discount >= 35:
-			color = "#ff9800"
-		case c.Discount >= 25:
-			color = "#ffc107"
-		case c.Discount >= 15:
+		if c.Discounted {
 			color = "#e3e31f"
 		}
 		m := osm.Marker{Pos: c.Pos, Color: color, Text: strconv.Itoa(c.Charge)}
@@ -123,7 +114,7 @@ func main() {
 	} else {
 		log.Println("Executing locally...")
 		res, _, body, err := coreLogic(map[string]string{
-			"lat1": "55.739892", "lon1": "12.517685", "lat2": "55.734577", "lon2": "12.526059",
+			"lat1": "55.740000", "lon1": "12.515000", "lat2": "55.730000", "lon2": "12.530000",
 			"cars": "true", "chargers": "true",
 		})
 		log.Printf("Status: %d, Error: %v, Body Len: %d\n", res, err, len(body))
