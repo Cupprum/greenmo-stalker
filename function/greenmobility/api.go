@@ -6,6 +6,7 @@ import (
 	"function/geo"
 	"net/http"
 	"net/url"
+	"sort"
 )
 
 type Car struct {
@@ -48,15 +49,18 @@ func Query(endpoint string, nw, se geo.Position, fuel int) ([]Car, error) {
 		return nil, fmt.Errorf("decode: %w", err)
 	}
 
-	var res []Car
+	var cars []Car
 	for _, c := range rawCars {
 		pos := geo.Position{Lat: c.Pos.Coords[1], Lon: c.Pos.Coords[0]}
 
 		// Greenmo thinks in circles, we think in squares
 		inBox := nw.Lon < pos.Lon && pos.Lon < se.Lon && se.Lat < pos.Lat && pos.Lat < nw.Lat
 		if c.SOC <= fuel && inBox {
-			res = append(res, Car{Pos: pos, Charge: c.SOC, Discounted: c.Benefit == "DISCOUNTED"})
+			cars = append(cars, Car{Pos: pos, Charge: c.SOC, Discounted: c.Benefit == "DISCOUNTED"})
 		}
 	}
-	return res, nil
+	sort.Slice(cars, func(i, j int) bool {
+		return cars[i].Charge > cars[j].Charge
+	})
+	return cars, nil
 }

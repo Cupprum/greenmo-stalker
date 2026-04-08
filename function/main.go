@@ -65,6 +65,9 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 	url := "https://maps.geoapify.com/v1/staticmap"
 	center := geo.Position{Lat: (nw.Lat + se.Lat) / 2, Lon: (nw.Lon + se.Lon) / 2}
 	markers := []osm.Marker{}
+	for _, c := range chargers {
+		markers = append(markers, osm.Marker{Pos: c, Color: "#5588d0", Icon: "ev_station"})
+	}
 	for _, c := range cars {
 		color := "#3ea635"
 		if c.Discounted {
@@ -72,9 +75,6 @@ func coreLogic(params map[string]string) (int, string, []byte, error) {
 		}
 		m := osm.Marker{Pos: c.Pos, Color: color, Text: strconv.Itoa(c.Charge)}
 		markers = append(markers, m)
-	}
-	for _, c := range chargers {
-		markers = append(markers, osm.Marker{Pos: c, Color: "#5588d0", Icon: "ev_station"})
 	}
 	img, err := osm.GenerateMap(url, center, markers, key)
 	if err != nil {
