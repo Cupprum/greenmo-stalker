@@ -82,5 +82,6 @@ func fetchDiscount(endpoint string, id int) (int, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return 0, err
 	}
-	return int(data.Discount.Percentage), nil
+	// Percentage as int instead of float
+	return int(data.Discount.Percentage * 100), nil
 }
