@@ -6,7 +6,7 @@ API proxy for identifying Greenmobility vehicles requiring charging in proximity
 
 ## Architecture
 
-![System Diagram](diagram/greenmo-diagram.excalidraw.png)
+![System Diagram](diagram.excalidraw.png)
 
 The system consists of an AWS Lambda function (Go) fronted by API Gateway. It interacts with:
 - **Greenmobility API**: Fetches vehicle locations and battery levels.
