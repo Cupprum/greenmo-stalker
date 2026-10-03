@@ -38,7 +38,7 @@ Resources:
       CodeUri: ./function/
       Handler: bootstrap
       Runtime: provided.al2023
-      Timeout: 15
+      Timeout: 30
       Environment:
         Variables:
           GREENMO_OPEN_MAPS_API_TOKEN: !Ref GreenmoOpenMapsApiToken
