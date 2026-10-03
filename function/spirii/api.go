@@ -30,6 +30,10 @@ func Query(endpoint string, nw, se geo.Position) ([]geo.Position, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("status %d", resp.StatusCode)
+	}
+
 	type Charger struct {
 		Props struct {
 			Id    string `json:"id"`
